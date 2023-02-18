@@ -319,7 +319,7 @@ const Table = <T extends DefaultRecordType>({
     setColumnsData(columns);
   }); */
 
-  /*   const onDragEnd = ({ active, over }: DragEndEvent) => {
+  const onDragEndRow = ({ active, over }: DragEndEvent) => {
     if (active.id !== over?.id) {
       setDataSource((prev) => {
         const activeIndex = prev.findIndex((i) => i.key === active.id);
@@ -327,82 +327,92 @@ const Table = <T extends DefaultRecordType>({
         return arrayMove(prev, activeIndex, overIndex);
       });
     }
-  }; */
+  };
 
-  const onDragEnd = (fromIndex, toIndex) => {
+  const onDragEndColumn = (fromIndex, toIndex) => {
     const columnsCopy = columns.slice();
     const item = columnsCopy.splice(fromIndex, 1)[0];
     columnsCopy.splice(toIndex, 0, item);
-    //this.setState({ columns: columnsCopy });
     setColumnsData(columnsCopy);
   };
 
   return (
     <ConfigProvider renderEmpty={() => <div className="mt-4">Empty</div>}>
-      <ReactDragListView.DragColumn onDragEnd={onDragEnd} nodeSelector="th">
-        <AntTable
-          components={{
-            body: {
-              row: Row,
-            },
-          }}
-          rowKey="key"
-          size="middle"
-          className={className}
-          columns={columns?.map(renderColumn)}
-          dataSource={dataSource}
-          showSorterTooltip={false}
-          rowSelection={rowSelection}
-          loading={{
-            spinning: loading,
-            indicator: <AiOutlineLoading className="animate-spin" />,
-          }}
-          pagination={{
-            size: "default",
-            showSizeChanger: canChangePageSize,
-            pageSize: itemsPerPage,
-            onShowSizeChange: (current: number, size: number) =>
-              setItemsPerPage(size),
-            total: dataSource.length,
-            position: [paginationPosition],
-            showTotal: (total: number) =>
-              total > 0 ? (
-                <p>
-                  {total} item{total > 1 ? "s" : ""}
-                </p>
-              ) : (
-                <p>No item</p>
-              ),
-            style: {
-              marginRight: "15px",
-            },
-          }}
-          expandable={
-            expandable
-              ? {
-                  expandedRowRender,
-                  rowExpandable,
-                  expandIcon: ({ expanded, onExpand, record }) =>
-                    !expanded ? (
-                      <span
-                        className="anticon opacity-60 cursor-pointer"
-                        onClick={(e) => onExpand(record, e)}
-                      >
-                        <GoChevronRight />
-                      </span>
-                    ) : (
-                      <span
-                        className="anticon opacity-60 cursor-pointer"
-                        onClick={(e) => onExpand(record, e)}
-                      >
-                        <GoChevronDown />
-                      </span>
-                    ),
-                }
-              : undefined
-          }
-          rowClassName={rowClassName}
-        />
+      <ReactDragListView.DragColumn
+        onDragEnd={onDragEndColumn}
+        nodeSelector="th"
+      >
+        <DndContext onDragEnd={onDragEndRow}>
+          <SortableContext
+            // rowKey array
+            items={dataSource.map((i) => i.key)}
+            strategy={verticalListSortingStrategy}
+          >
+            <AntTable
+              components={{
+                body: {
+                  row: Row,
+                },
+              }}
+              rowKey="key"
+              size="middle"
+              className={className}
+              columns={columns?.map(renderColumn)}
+              dataSource={dataSource}
+              showSorterTooltip={false}
+              rowSelection={rowSelection}
+              loading={{
+                spinning: loading,
+                indicator: <AiOutlineLoading className="animate-spin" />,
+              }}
+              pagination={{
+                size: "default",
+                showSizeChanger: canChangePageSize,
+                pageSize: itemsPerPage,
+                onShowSizeChange: (current: number, size: number) =>
+                  setItemsPerPage(size),
+                total: dataSource.length,
+                position: [paginationPosition],
+                showTotal: (total: number) =>
+                  total > 0 ? (
+                    <p>
+                      {total} item{total > 1 ? "s" : ""}
+                    </p>
+                  ) : (
+                    <p>No item</p>
+                  ),
+                style: {
+                  marginRight: "15px",
+                },
+              }}
+              expandable={
+                expandable
+                  ? {
+                      expandedRowRender,
+                      rowExpandable,
+                      expandIcon: ({ expanded, onExpand, record }) =>
+                        !expanded ? (
+                          <span
+                            className="anticon opacity-60 cursor-pointer"
+                            onClick={(e) => onExpand(record, e)}
+                          >
+                            <GoChevronRight />
+                          </span>
+                        ) : (
+                          <span
+                            className="anticon opacity-60 cursor-pointer"
+                            onClick={(e) => onExpand(record, e)}
+                          >
+                            <GoChevronDown />
+                          </span>
+                        ),
+                    }
+                  : undefined
+              }
+              rowClassName={rowClassName}
+            />
+          </SortableContext>
+        </DndContext>
       </ReactDragListView.DragColumn>
     </ConfigProvider>
   );
