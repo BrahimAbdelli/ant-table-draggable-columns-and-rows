@@ -4,17 +4,9 @@ import type { TableColumn } from "../components/table";
 
 import data from "./data.json";
 import { useEffect, useState } from "react";
+import { Person } from "./types/Person";
 
 const inter = Inter({ subsets: ["latin"] });
-
-interface Person {
-  key: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  gender: string;
-  ipAddress: string;
-}
 
 const columns: TableColumn<Person>[] = [
   {
@@ -73,7 +65,7 @@ const columns: TableColumn<Person>[] = [
 
 export default function Home() {
   const [dataSource, setDataSource] = useState<Person[]>([]);
-  const [columnsData, setColumnsData] = useState<TableColumn<T>[]>();
+  const [columnsData, setColumnsData] = useState<TableColumn<Person>[]>([]);
   useEffect(() => {
     setDataSource(data);
     setColumnsData(columns);

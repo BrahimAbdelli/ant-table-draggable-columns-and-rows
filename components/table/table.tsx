@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  SetStateAction,
+  Dispatch,
+} from "react";
 import {
   ConfigProvider,
   Table as AntTable,
@@ -26,7 +32,6 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Person } from "../../pages/types/Person";
 import ReactDragListView from "react-drag-listview";
 import { TableColumn } from "../../pages/types/TableColumn";
 
@@ -53,8 +58,8 @@ interface TableProps<T> {
   pageSize?: number;
   canChangePageSize?: boolean;
   paginationPosition?: "topRight" | "topLeft" | "bottomRight" | "bottomLeft";
-  setDataSource;
-  setColumnsData;
+  setDataSource: Dispatch<SetStateAction<T[]>>;
+  setColumnsData: Dispatch<SetStateAction<TableColumn<T>[]>>;
 }
 
 const Table = <T extends DefaultRecordType>({
@@ -78,7 +83,6 @@ const Table = <T extends DefaultRecordType>({
   const [searchText, setSearchText] = useState<string>("");
   const [searchedColumn, setSearchedColumn] = useState<string>("");
   const [itemsPerPage, setItemsPerPage] = useState<number>(pageSize);
-  //const [dataSourceReceived, setDataSourceReceived] = useState<T[]>([]);
 
   const searchInput = useRef<InputRef>(null);
 
@@ -314,11 +318,6 @@ const Table = <T extends DefaultRecordType>({
     );
   };
 
-  /*   useEffect(() => {
-    setDataSource(dataSource);
-    setColumnsData(columns);
-  }); */
-
   const onDragEndRow = ({ active, over }: DragEndEvent) => {
     if (active.id !== over?.id) {
       setDataSource((prev) => {
@@ -329,7 +328,7 @@ const Table = <T extends DefaultRecordType>({
     }
   };
 
-  const onDragEndColumn = (fromIndex, toIndex) => {
+  const onDragEndColumn = (fromIndex: number, toIndex: number) => {
     const columnsCopy = columns.slice();
     const item = columnsCopy.splice(fromIndex, 1)[0];
     columnsCopy.splice(toIndex, 0, item);
