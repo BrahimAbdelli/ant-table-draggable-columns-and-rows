@@ -73,8 +73,10 @@ const columns: TableColumn<Person>[] = [
 
 export default function Home() {
   const [dataSource, setDataSource] = useState<Person[]>([]);
+  const [columnsData, setColumnsData] = useState<TableColumn<T>[]>();
   useEffect(() => {
     setDataSource(data);
+    setColumnsData(columns);
   }, []);
 
   return (
@@ -88,7 +90,8 @@ export default function Home() {
       }}
     >
       <Table
-        columns={columns}
+        columns={columnsData}
+        setColumnsData={setColumnsData}
         dataSource={dataSource}
         setDataSource={setDataSource}
       />
