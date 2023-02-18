@@ -61,11 +61,13 @@ interface TableProps<T> {
   pageSize?: number;
   canChangePageSize?: boolean;
   paginationPosition?: "topRight" | "topLeft" | "bottomRight" | "bottomLeft";
+  setDataSource;
 }
 
 const Table = <T extends DefaultRecordType>({
   columns,
   dataSource,
+  setDataSource,
   loading = false,
   selectable = false,
   onSelected = undefined,
@@ -82,7 +84,7 @@ const Table = <T extends DefaultRecordType>({
   const [searchText, setSearchText] = useState<string>("");
   const [searchedColumn, setSearchedColumn] = useState<string>("");
   const [itemsPerPage, setItemsPerPage] = useState<number>(pageSize);
-  const [dataSourceReceived, setDataSourceReceived] = useState<T[]>([]);
+  //const [dataSourceReceived, setDataSourceReceived] = useState<T[]>([]);
 
   const searchInput = useRef<InputRef>(null);
 
@@ -319,12 +321,12 @@ const Table = <T extends DefaultRecordType>({
   };
 
   useEffect(() => {
-    setDataSourceReceived(dataSource);
+    setDataSource(dataSource);
   });
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     if (active.id !== over?.id) {
-      setDataSourceReceived((prev) => {
+      setDataSource((prev) => {
         const activeIndex = prev.findIndex((i) => i.key === active.id);
         const overIndex = prev.findIndex((i) => i.key === over?.id);
         return arrayMove(prev, activeIndex, overIndex);
@@ -337,7 +339,7 @@ const Table = <T extends DefaultRecordType>({
       <DndContext onDragEnd={onDragEnd}>
         <SortableContext
           // rowKey array
-          items={dataSourceReceived.map((i) => i.key)}
+          items={dataSource.map((i) => i.key)}
           strategy={verticalListSortingStrategy}
         >
           <AntTable
@@ -350,7 +352,7 @@ const Table = <T extends DefaultRecordType>({
             size="middle"
             className={className}
             columns={columns.map(renderColumn)}
-            dataSource={dataSourceReceived}
+            dataSource={dataSource}
             showSorterTooltip={false}
             rowSelection={rowSelection}
             loading={{
@@ -363,7 +365,7 @@ const Table = <T extends DefaultRecordType>({
               pageSize: itemsPerPage,
               onShowSizeChange: (current: number, size: number) =>
                 setItemsPerPage(size),
-              total: dataSourceReceived.length,
+              total: dataSource.length,
               position: [paginationPosition],
               showTotal: (total: number) =>
                 total > 0 ? (
