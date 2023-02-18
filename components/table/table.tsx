@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   ConfigProvider,
   Table as AntTable,
@@ -17,6 +17,16 @@ import {
 } from "antd/lib/table/interface";
 import { GoChevronRight, GoChevronDown } from "react-icons/go";
 import Highlighter from "react-highlight-words";
+import { CSS } from "@dnd-kit/utilities";
+import type { DragEndEvent } from "@dnd-kit/core";
+import { DndContext } from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { Person } from "../../pages/types/Person";
 
 type DefaultRecordType = {
   [x: string]: any;
@@ -72,6 +82,7 @@ const Table = <T extends DefaultRecordType>({
   const [searchText, setSearchText] = useState<string>("");
   const [searchedColumn, setSearchedColumn] = useState<string>("");
   const [itemsPerPage, setItemsPerPage] = useState<number>(pageSize);
+  const [dataSourceReceived, setDataSourceReceived] = useState<T[]>([]);
 
   const searchInput = useRef<InputRef>(null);
 
@@ -270,65 +281,130 @@ const Table = <T extends DefaultRecordType>({
     };
   };
 
+  interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
+    "data-row-key": string;
+  }
+
+  const Row = (props: RowProps) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({
+      id: props["data-row-key"],
+    });
+
+    const style: React.CSSProperties = {
+      ...props.style,
+      transform: CSS.Transform.toString(
+        transform && { ...transform, scaleY: 1 }
+      ),
+      transition,
+      cursor: "move",
+      ...(isDragging ? { position: "relative", zIndex: 9999 } : {}),
+    };
+
+    return (
+      <tr
+        {...props}
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+      />
+    );
+  };
+
+  useEffect(() => {
+    setDataSourceReceived(dataSource);
+  });
+
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (active.id !== over?.id) {
+      setDataSourceReceived((prev) => {
+        const activeIndex = prev.findIndex((i) => i.key === active.id);
+        const overIndex = prev.findIndex((i) => i.key === over?.id);
+        return arrayMove(prev, activeIndex, overIndex);
+      });
+    }
+  };
+
   return (
     <ConfigProvider renderEmpty={() => <div className="mt-4">Empty</div>}>
-      <AntTable
-        size="middle"
-        className={className}
-        columns={columns.map(renderColumn)}
-        dataSource={dataSource}
-        showSorterTooltip={false}
-        rowSelection={rowSelection}
-        loading={{
-          spinning: loading,
-          indicator: <AiOutlineLoading className="animate-spin" />,
-        }}
-        pagination={{
-          size: "default",
-          showSizeChanger: canChangePageSize,
-          pageSize: itemsPerPage,
-          onShowSizeChange: (current: number, size: number) =>
-            setItemsPerPage(size),
-          total: dataSource.length,
-          position: [paginationPosition],
-          showTotal: (total: number) =>
-            total > 0 ? (
-              <p>
-                {total} item{total > 1 ? "s" : ""}
-              </p>
-            ) : (
-              <p>No item</p>
-            ),
-          style: {
-            marginRight: "15px",
-          },
-        }}
-        expandable={
-          expandable
-            ? {
-                expandedRowRender,
-                rowExpandable,
-                expandIcon: ({ expanded, onExpand, record }) =>
-                  !expanded ? (
-                    <span
-                      className="anticon opacity-60 cursor-pointer"
-                      onClick={(e) => onExpand(record, e)}
-                    >
-                      <GoChevronRight />
-                    </span>
-                  ) : (
-                    <span
-                      className="anticon opacity-60 cursor-pointer"
-                      onClick={(e) => onExpand(record, e)}
-                    >
-                      <GoChevronDown />
-                    </span>
-                  ),
-              }
-            : undefined
-        }
-        rowClassName={rowClassName}
-      />
+      <DndContext onDragEnd={onDragEnd}>
+        <SortableContext
+          // rowKey array
+          items={dataSourceReceived.map((i) => i.key)}
+          strategy={verticalListSortingStrategy}
+        >
+          <AntTable
+            components={{
+              body: {
+                row: Row,
+              },
+            }}
+            rowKey="key"
+            size="middle"
+            className={className}
+            columns={columns.map(renderColumn)}
+            dataSource={dataSourceReceived}
+            showSorterTooltip={false}
+            rowSelection={rowSelection}
+            loading={{
+              spinning: loading,
+              indicator: <AiOutlineLoading className="animate-spin" />,
+            }}
+            pagination={{
+              size: "default",
+              showSizeChanger: canChangePageSize,
+              pageSize: itemsPerPage,
+              onShowSizeChange: (current: number, size: number) =>
+                setItemsPerPage(size),
+              total: dataSourceReceived.length,
+              position: [paginationPosition],
+              showTotal: (total: number) =>
+                total > 0 ? (
+                  <p>
+                    {total} item{total > 1 ? "s" : ""}
+                  </p>
+                ) : (
+                  <p>No item</p>
+                ),
+              style: {
+                marginRight: "15px",
+              },
+            }}
+            expandable={
+              expandable
+                ? {
+                    expandedRowRender,
+                    rowExpandable,
+                    expandIcon: ({ expanded, onExpand, record }) =>
+                      !expanded ? (
+                        <span
+                          className="anticon opacity-60 cursor-pointer"
+                          onClick={(e) => onExpand(record, e)}
+                        >
+                          <GoChevronRight />
+                        </span>
+                      ) : (
+                        <span
+                          className="anticon opacity-60 cursor-pointer"
+                          onClick={(e) => onExpand(record, e)}
+                        >
+                          <GoChevronDown />
+                        </span>
+                      ),
+                  }
+                : undefined
+            }
+            rowClassName={rowClassName}
+          />
+        </SortableContext>
+      </DndContext>
     </ConfigProvider>
   );
 };
