@@ -5,6 +5,7 @@ import type { TableColumn } from "../components/table";
 import data from "./data.json";
 import { useEffect, useState } from "react";
 import { Person } from "./types/Person";
+import { Order } from "./types/TableColumn";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -66,9 +67,20 @@ const columns: TableColumn<Person>[] = [
 export default function Home() {
   const [dataSource, setDataSource] = useState<Person[]>([]);
   const [columnsData, setColumnsData] = useState<TableColumn<Person>[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     setDataSource(data);
     setColumnsData(columns);
+
+    if (localStorage.getItem("order")) {
+      const order: Order[] = JSON.parse(localStorage.getItem("order") || "[]");
+      const reorderedList: any = order.map((item) =>
+        columns.find((x) => x.dataIndex == item.element)
+      );
+      setColumnsData(reorderedList);
+    }
+    setIsLoading(false);
   }, []);
 
   return (
@@ -81,12 +93,17 @@ export default function Home() {
         borderRadius: "4px",
       }}
     >
-      <Table
-        columns={columnsData}
-        setColumnsData={setColumnsData}
-        dataSource={dataSource}
-        setDataSource={setDataSource}
-      />
+      {!isLoading ? (
+        <Table
+          columns={columnsData}
+          setColumnsData={setColumnsData}
+          dataSource={dataSource}
+          setDataSource={setDataSource}
+          loading={isLoading}
+        />
+      ) : (
+        <div>Loading</div>
+      )}
     </div>
   );
 }

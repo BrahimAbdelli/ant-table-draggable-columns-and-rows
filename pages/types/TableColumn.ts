@@ -1,5 +1,7 @@
 import type { ColumnType } from "antd/lib/table";
 
+export declare type DataIndex = string | number | (string | number)[];
+
 // We create our own column type, so that we can add more features to each column
 export interface TableColumn<T> extends ColumnType<T> {
   title?: string;
@@ -8,4 +10,9 @@ export interface TableColumn<T> extends ColumnType<T> {
   searchFormatter?: (record: T) => string;
   searchRender?: (searchText: string, record: T) => JSX.Element;
   searchHighlightProps?: string; // On which props generated from searchRender should we highlight ?
+}
+
+export interface Order {
+  element: DataIndex;
+  toIndex: number;
 }

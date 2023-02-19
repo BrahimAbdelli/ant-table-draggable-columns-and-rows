@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  SetStateAction,
-  Dispatch,
-} from "react";
+import React, { useState, useRef, SetStateAction, Dispatch } from "react";
 import {
   ConfigProvider,
   Table as AntTable,
@@ -33,13 +27,11 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import ReactDragListView from "react-drag-listview";
-import { TableColumn } from "../../pages/types/TableColumn";
+import { DataIndex, Order, TableColumn } from "../../pages/types/TableColumn";
 
 type DefaultRecordType = {
   [x: string]: any;
 };
-
-declare type DataIndex = string | number | (string | number)[];
 
 interface TableProps<T> {
   columns: TableColumn<T>[];
@@ -175,7 +167,7 @@ const Table = <T extends DefaultRecordType>({
       )
         .toLowerCase()
         .includes(value.toString().toLowerCase()),
-    onFilterDropdownVisibleChange: (visible) => {
+    onFilterDropdownOpenChange: (visible) => {
       if (visible) {
         setTimeout(() => searchInput.current?.select(), 100);
       }
@@ -333,6 +325,13 @@ const Table = <T extends DefaultRecordType>({
     const item = columnsCopy.splice(fromIndex, 1)[0];
     columnsCopy.splice(toIndex, 0, item);
     setColumnsData(columnsCopy);
+    const order: Order[] = [];
+
+    columnsCopy.forEach((element, index: number) => {
+      order.push({ element: element.dataIndex, toIndex: index });
+    });
+    console.log(order);
+    localStorage.setItem("order", JSON.stringify(order));
   };
 
   return (
