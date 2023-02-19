@@ -1,7 +1,12 @@
 {
-  "name": "assessment",
+  "name": "ant-table-draggable-columns-and-rows",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "author": {
+    "name": "Brahim Abdelli",
+    "email": "brahim.abdelli994@gmail.com",
+    "url": "https://brahimabdelli.com"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
