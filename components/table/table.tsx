@@ -310,27 +310,39 @@ const Table = <T extends DefaultRecordType>({
     );
   };
 
+  /**
+   *
+   * @param active : is the row the we are selecting to drag
+   * @param over : is the row that we will be going below with our selected one
+   */
   const onDragEndRow = ({ active, over }: DragEndEvent) => {
+    // If both rows have a different idsn then we will proceed to reorder
     if (active.id !== over?.id) {
       setDataSource((prev) => {
+        // activeIndex is the index of the selected row in the rendered HTML
         const activeIndex = prev.findIndex((i) => i.key === active.id);
+        // overIndex is the index of the row that we will be going to in the rendered HTML
         const overIndex = prev.findIndex((i) => i.key === over?.id);
         return arrayMove(prev, activeIndex, overIndex);
       });
     }
   };
-
+  /**
+   *
+   * @param fromIndex : the initial index of the column
+   * @param toIndex : the index of the column that we want to go to.
+   */
   const onDragEndColumn = (fromIndex: number, toIndex: number) => {
     const columnsCopy = columns.slice();
     const item = columnsCopy.splice(fromIndex, 1)[0];
     columnsCopy.splice(toIndex, 0, item);
     setColumnsData(columnsCopy);
+    // The order variable will store the element key, and it's index to
+    // a variable that will be stored in the localstorage
     const order: Order[] = [];
-
     columnsCopy.forEach((element, index: number) => {
       order.push({ element: element.dataIndex, toIndex: index });
     });
-    console.log(order);
     localStorage.setItem("order", JSON.stringify(order));
   };
 

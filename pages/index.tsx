@@ -69,10 +69,16 @@ export default function Home() {
   const [columnsData, setColumnsData] = useState<TableColumn<Person>[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  /**
+   * This useEffect aims to patch data and columns to usestates that will later on be passed
+   * to the table component.
+   */
   useEffect(() => {
     setDataSource(data);
     setColumnsData(columns);
 
+    // The order item containes the order previously persisted in the localstorage,
+    // If it is not null, then we will reorder the columnsData state
     if (localStorage.getItem("order")) {
       const order: Order[] = JSON.parse(localStorage.getItem("order") || "[]");
       const reorderedList: any = order.map((item) =>
