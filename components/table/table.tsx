@@ -6,7 +6,7 @@ import {
   Input,
   Checkbox,
 } from "antd";
-import type { InputRef } from "antd";
+import { InputRef, Row } from "antd";
 import type { ColumnType } from "antd/lib/table";
 import { AiOutlineLoading } from "react-icons/ai";
 import { SearchOutlined } from "@ant-design/icons";
@@ -52,6 +52,7 @@ interface TableProps<T> {
   paginationPosition?: "topRight" | "topLeft" | "bottomRight" | "bottomLeft";
   setDataSource: Dispatch<SetStateAction<T[]>>;
   setColumnsData: Dispatch<SetStateAction<TableColumn<T>[]>>;
+  initialColumnsData: TableColumn<T>[];
 }
 
 const Table = <T extends DefaultRecordType>({
@@ -59,6 +60,7 @@ const Table = <T extends DefaultRecordType>({
   dataSource,
   setDataSource,
   setColumnsData,
+  initialColumnsData,
   loading = false,
   selectable = false,
   onSelected = undefined,
@@ -277,7 +279,7 @@ const Table = <T extends DefaultRecordType>({
     "data-row-key": string;
   }
 
-  const Row = (props: RowProps) => {
+  const RowAntTable = (props: RowProps) => {
     const {
       attributes,
       listeners,
@@ -346,85 +348,116 @@ const Table = <T extends DefaultRecordType>({
     localStorage.setItem("order", JSON.stringify(order));
   };
 
+  /**
+   * This method aims to initialize Order by setting the initial column values
+   * and orders and by emptying the localStorage variable.
+   */
+  const initializeOrder = () => {
+    setColumnsData(initialColumnsData);
+    localStorage.setItem("order", "");
+  };
+
   return (
-    <ConfigProvider renderEmpty={() => <div className="mt-4">Empty</div>}>
-      <ReactDragListView.DragColumn
-        onDragEnd={onDragEndColumn}
-        nodeSelector="th"
-      >
-        <DndContext onDragEnd={onDragEndRow}>
-          <SortableContext
-            // rowKey array
-            items={dataSource.map((i) => i.key)}
-            strategy={verticalListSortingStrategy}
-          >
-            <AntTable
-              components={{
-                body: {
-                  row: Row,
-                },
-              }}
-              rowKey="key"
-              size="middle"
-              className={className}
-              columns={columns?.map(renderColumn)}
-              dataSource={dataSource}
-              showSorterTooltip={false}
-              rowSelection={rowSelection}
-              loading={{
-                spinning: loading,
-                indicator: <AiOutlineLoading className="animate-spin" />,
-              }}
-              pagination={{
-                size: "default",
-                showSizeChanger: canChangePageSize,
-                pageSize: itemsPerPage,
-                onShowSizeChange: (current: number, size: number) =>
-                  setItemsPerPage(size),
-                total: dataSource.length,
-                position: [paginationPosition],
-                showTotal: (total: number) =>
-                  total > 0 ? (
-                    <p>
-                      {total} item{total > 1 ? "s" : ""}
-                    </p>
-                  ) : (
-                    <p>No item</p>
+    <>
+      <ConfigProvider renderEmpty={() => <div className="mt-4">Empty</div>}>
+        <ReactDragListView.DragColumn
+          onDragEnd={onDragEndColumn}
+          nodeSelector="th"
+        >
+          <DndContext onDragEnd={onDragEndRow}>
+            <SortableContext
+              // rowKey array
+              items={dataSource.map((i) => i.key)}
+              strategy={verticalListSortingStrategy}
+            >
+              <AntTable
+                components={{
+                  body: {
+                    row: RowAntTable,
+                  },
+                }}
+                rowKey="key"
+                size="middle"
+                className={className}
+                columns={columns?.map(renderColumn)}
+                dataSource={dataSource}
+                showSorterTooltip={false}
+                rowSelection={rowSelection}
+                loading={{
+                  spinning: loading,
+                  indicator: <AiOutlineLoading className="animate-spin" />,
+                }}
+                pagination={{
+                  size: "default",
+                  showSizeChanger: canChangePageSize,
+                  pageSize: itemsPerPage,
+                  onShowSizeChange: (current: number, size: number) =>
+                    setItemsPerPage(size),
+                  total: dataSource.length,
+                  position: [paginationPosition],
+                  showTotal: (total: number) => (
+                    <div>
+                      <Row className="margin-right:40px">
+                        <div>
+                          <Button
+                            className=""
+                            type="primary"
+                            onClick={() => initializeOrder()}
+                            size="middle"
+                            style={{ marginRight: "16px" }}
+                          >
+                            Initialize
+                          </Button>
+                        </div>
+                        <div>
+                          {total > 0 ? (
+                            <p>
+                              {total} item{total > 1 ? "s" : ""}
+                            </p>
+                          ) : (
+                            <p>No item</p>
+                          )}
+                        </div>
+                      </Row>
+                    </div>
                   ),
-                style: {
-                  marginRight: "15px",
-                },
-              }}
-              expandable={
-                expandable
-                  ? {
-                      expandedRowRender,
-                      rowExpandable,
-                      expandIcon: ({ expanded, onExpand, record }) =>
-                        !expanded ? (
-                          <span
-                            className="anticon opacity-60 cursor-pointer"
-                            onClick={(e) => onExpand(record, e)}
-                          >
-                            <GoChevronRight />
-                          </span>
-                        ) : (
-                          <span
-                            className="anticon opacity-60 cursor-pointer"
-                            onClick={(e) => onExpand(record, e)}
-                          >
-                            <GoChevronDown />
-                          </span>
-                        ),
-                    }
-                  : undefined
-              }
-              rowClassName={rowClassName}
-            />
-          </SortableContext>
-        </DndContext>
-      </ReactDragListView.DragColumn>
-    </ConfigProvider>
+                  style: {
+                    marginRight: "15px",
+                    justifyContent: "",
+                    flex: "",
+                  },
+                }}
+                expandable={
+                  expandable
+                    ? {
+                        expandedRowRender,
+                        rowExpandable,
+                        expandIcon: ({ expanded, onExpand, record }) =>
+                          !expanded ? (
+                            <span
+                              className="anticon opacity-60 cursor-pointer"
+                              onClick={(e) => onExpand(record, e)}
+                            >
+                              <GoChevronRight />
+                            </span>
+                          ) : (
+                            <span
+                              className="anticon opacity-60 cursor-pointer"
+                              onClick={(e) => onExpand(record, e)}
+                            >
+                              <GoChevronDown />
+                            </span>
+                          ),
+                      }
+                    : undefined
+                }
+                rowClassName={rowClassName}
+              />
+            </SortableContext>
+          </DndContext>
+        </ReactDragListView.DragColumn>
+      </ConfigProvider>
+    </>
   );
 };
 

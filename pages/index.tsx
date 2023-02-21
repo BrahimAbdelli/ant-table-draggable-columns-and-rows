@@ -67,6 +67,9 @@ const columns: TableColumn<Person>[] = [
 export default function Home() {
   const [dataSource, setDataSource] = useState<Person[]>([]);
   const [columnsData, setColumnsData] = useState<TableColumn<Person>[]>([]);
+  const [initialColumnsData, setInitialColumsData] = useState<
+    TableColumn<Person>[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
 
   /**
@@ -76,6 +79,7 @@ export default function Home() {
   useEffect(() => {
     setDataSource(data);
     setColumnsData(columns);
+    setInitialColumsData(columns);
 
     // The order item containes the order previously persisted in the localstorage,
     // If it is not null, then we will reorder the columnsData state
@@ -106,6 +110,7 @@ export default function Home() {
           dataSource={dataSource}
           setDataSource={setDataSource}
           loading={isLoading}
+          initialColumnsData={initialColumnsData}
         />
       ) : (
         <div>Loading</div>
