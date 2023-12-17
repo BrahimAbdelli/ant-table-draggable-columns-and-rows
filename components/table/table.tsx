@@ -160,7 +160,7 @@ const Table = <T extends DefaultRecordType>({
       </div>
     ),
     filterIcon: (filtered: boolean) => (
-      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} rev={undefined} />
     ),
     onFilter: (value, record) =>
       (column.searchFormatter
